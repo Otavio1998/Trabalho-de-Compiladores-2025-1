@@ -3,7 +3,7 @@
 // Otávio Capelão - 00274737
 #include <iostream>
 #include <map>
-#include <tokens.h>
+#include "tokens.h"
 
 using namespace std;
 
@@ -19,7 +19,7 @@ void printSymbolTable();
 
 int main(int argc, char **argv){
     if(argc < 2){
-        fprintf(stderr, "Call: ./a.out filename\n");
+        fprintf(stderr, "Call: ./Etapa1 filename\n");
         exit(1);
     }
 
@@ -33,7 +33,7 @@ int main(int argc, char **argv){
     while(isRunning()){
         yylex();
 
-        if(isRunning == 0){
+        if(!isRunning){
             break;
         }
     }

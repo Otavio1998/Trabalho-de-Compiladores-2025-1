@@ -1,3 +1,5 @@
+// trabalho de compiladores 2025/1 Professor Marcelo Johann
+// Otávio Capelão - 00274737
 #include "symbols.hpp"
 
 map<string, SYMBOL> *symbolTable = new map<string, SYMBOL>();
@@ -16,7 +18,7 @@ string GetSymbol(string identifier, map<string, SYMBOL> *symbolTable){
        
 }
 
-int InsertSymbol(string identifier,string type, map<string, SYMBOL> *symbolTable){
+int InsertSymbol(string identifier,int type, map<string, SYMBOL> *symbolTable){
     
     if((GetSymbol(identifier, symbolTable)) == ""){
         SYMBOL s;
@@ -31,6 +33,6 @@ int InsertSymbol(string identifier,string type, map<string, SYMBOL> *symbolTable
 
 void printSymbolTable(){
     for(const auto &pair : *symbolTable){
-        printf("Name: %s Type: %s\n", pair.second.name, pair.second.type);
+        printf("Name: %s Type: %d\n", pair.second.name.c_str(), pair.second.type);
     }
 }

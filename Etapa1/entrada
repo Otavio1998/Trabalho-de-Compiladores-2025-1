@@ -1,6 +1,20 @@
 int i = 0;
 int j = 1;
 real k = 1/2;
-char l = 'b';
+//comentario
+/-- comentario 
+de
+mutiplas
+linhas--/
 byte m = 123;
-string = "batata";
+algo = "batata";
+int s_kibidi = 3;
+if i 4 else 5;
+do {
+    read
+    something <= other
+    ab >= something
+    abs == 6
+    algomais != wryyyy
+    print("isso e string")
+}while(run)
