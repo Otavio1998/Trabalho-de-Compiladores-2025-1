@@ -48,7 +48,7 @@ return      {return KW_RETURN;}
 <COMMENT>.      
 
 
-[a-zA-Z][_a-zA-Z0-9]* {InsertSymbol(yytext, TK_IDENTIFIER, symbolTable);
+[a-zA-Z_][_a-zA-Z0-9]* {InsertSymbol(yytext, TK_IDENTIFIER, symbolTable);
                         return TK_IDENTIFIER;}
 
 [0-9]+\/[0-9]+           {InsertSymbol(yytext, LIT_REAL, symbolTable);
