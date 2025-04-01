@@ -22,6 +22,8 @@ string inverse;
 
 %x COMMENT
 
+%option nounput
+
 %%
 byte        {return KW_BYTE;}
 int         {return KW_INT;}
