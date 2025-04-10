@@ -1,0 +1,76 @@
+%{
+    #include<iostream>
+    using namespace std;
+
+    int yylex();
+    int getLineNumber();
+    void yyerror();
+
+%}
+
+
+%token KW_BYTE
+%token KW_INT
+%token KW_REAL
+%token KW_REAL
+%token KW_RETURN
+%token KW_DO
+%token KW_ELSE
+%token KW_IF
+%token KW_PRINT
+%token KW_READ
+%token KW_WHILE
+
+%token TK_IDENTIFIER
+%token LIT_INT
+%token LIT_CHAR
+%token LIT_REAL
+%token LIT_STRING
+
+
+%%
+
+program: dclr
+    ;
+
+dclr : dclrVar dclr
+    |    dclrFunc dclr
+    |    dclrVec dclr
+    |
+    ;
+
+type : KW_INT
+    |    KW_REAL
+    |    KW_BYTE
+    |
+    ;
+
+dlcrVar : type TK_IDENTIFIER '=' ltVal ';'
+        |    type TK_IDENTIFIER '[' LIT_INT ']' ';'
+        |    type TK_IDENTIFIER '[' LIT_INT ']' '=' vecVals ';'
+
+        ;
+
+ltVal: LIT_CHAR
+    |    LIT_INT
+    |   LIT_REAL
+    |
+    ;
+
+vecVals : ltVal vecVals
+            |
+            ;
+
+dclrFunc : type TK_IDENTIFIER '(' param ')' cmndBlk
+            ;
+
+param : type someVar someParam
+        |
+        ;
+
+%%
+
+void yyerror(){
+    printf("Syntax error on line %d\n", getLineNumber());
+    exit(3); 
+}
