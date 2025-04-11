@@ -11,7 +11,7 @@
 
 %token KW_BYTE
 %token KW_INT
-%token KW_REAL
+%token KW_CHAR
 %token KW_REAL
 %token KW_RETURN
 %token KW_DO
@@ -42,13 +42,14 @@ dclr : dclrVar dclr
 type : KW_INT
     |    KW_REAL
     |    KW_BYTE
+    |   KW_CHAR
     |
     ;
 
 dlcrVar : type TK_IDENTIFIER '=' ltVal ';'
         |    type TK_IDENTIFIER '[' LIT_INT ']' ';'
-        |    type TK_IDENTIFIER '[' LIT_INT ']' '=' vecVals ';'
-
+        |    type TK_IDENTIFIER '[' LIT_INT ']' '=' vecVals ','
+        |
         ;
 
 ltVal: LIT_CHAR
@@ -61,12 +62,99 @@ vecVals : ltVal vecVals
             |
             ;
 
-dclrFunc : type TK_IDENTIFIER '(' param ')' cmndBlk
+dclrFunc : type TK_IDENTIFIER '(' param ')' cmndBlck
             ;
 
 param : type someVar someParam
         |
         ;
+
+
+someVar : TK_IDENTIFIER
+        |   TK_IDENTIFIER '[' expression ']'
+        |
+        ;
+
+someParam : ',' type someVar someParam
+        |
+        ;
+
+expression: someVar
+        |   ltVal
+        | expression '+' expression
+        | expression '-' expression
+        | expression '/' expression
+        | expression '/' expression
+        | expression '>' expression
+        | expression '<' expression
+        | expression '&' expression
+        | expression '|' expression
+        | expression '~' expression
+        | expression '>=' expression
+        | expression '<=' expression
+        | expression '==' expression
+        | expression '!=' expression
+        |
+        ;
+
+cmndBlck : '{' cmndSeq '}'
+        ;
+
+cmndSeq : cmnd cmndSeq
+        |
+        ;
+
+cmnd : cmndAtr ';'
+    | cmndFlow
+    | cmndRead ';'
+    | cmndPrint ';'
+    | cmndReturn ';'
+    | cmndBlck
+    | ';'
+
+cmndAtr : someVar '=' expression
+        ;
+
+cmndFlow: KW_IF cond cmnd
+        | KW_IF cond cmnd KW_ELSE cond cmnd
+        | KW_WHILE wcond KW_DO cmnd
+        | KW_DO cmnd KW_WHILE wcond ';'
+        ;
+
+wcond : cond
+         expression
+        ;
+
+cond : '(' expression ')'
+
+cmndRead : KW_READ someVar
+        ;
+
+cmndPrint: KW_PRINT printList
+        ;
+
+printArgs : LIT_STRING
+        | expression
+        ;
+
+printLrgs : printArgs printList
+        |
+        ;
+
+cmndReturn: KW_RETURN expression
+        ;
+
+funcCall : TK_IDENTIFIER '(' funcArgs ')'
+        ;
+
+funcArgs : expression someArgs
+        |
+        ;
+
+someArgs : ',' expression someArgs
+        |
+        ;
+
 
 %%
 
