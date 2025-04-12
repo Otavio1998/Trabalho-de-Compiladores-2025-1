@@ -12,7 +12,7 @@ lex.yy.cpp: scanner.l
 		flex -o lex.yy.cpp scanner.l
 
 parser.tab.cpp: parser.ypp
-		bison -d parser.ypp -d
+		bison parser.ypp -d
 
 clean: 
-		rm etapa2 lex.yy.cpp parser.tab.cpp parser.tab.hpp*.o
+		rm etapa2 lex.yy.cpp parser.tab.cpp parser.tab.hpp *.o

@@ -6,7 +6,7 @@ Otavio Capelão - 00274737
 #include <stdlib.h>
 #include <map>
 #include "symbols.hpp"
-#include "tokens.h"
+#include "parser.tab.hpp"
 #include <algorithm>
 
 extern struct SYMBOL symbol;

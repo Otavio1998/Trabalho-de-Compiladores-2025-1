@@ -4,6 +4,8 @@ Otavio Capelão - 00274737*/
 #include <string>
 #include <map>
 
+#include "parser.tab.hpp"
+
 using namespace std;
 
 #ifndef SYMBOLTYPE
@@ -31,7 +33,6 @@ int InsertSymbol(string identifier,int type,  map<string, SYMBOL> *symbolTable);
 //returns a symbol from the table
 string GetSymbol(string identifier, map<string, SYMBOL> *symbolTable);
 
-int GetType(int type);
 
 
 

@@ -4,7 +4,7 @@
 
     int yylex();
     int getLineNumber();
-    void yyerror();
+    void yyerror(const char *s);
 
 %}
 
@@ -27,6 +27,20 @@
 %token LIT_REAL
 %token LIT_STRING
 
+%token OPERATOR_LE
+%token OPERATOR_GE
+%token OPERATOR_EQ
+%token OPERATOR_DIF
+
+%token TOKEN_ERROR
+
+%left '+' '-'
+%left '*' '/'
+%left '='
+%left '~'
+%left '&' '|'
+%nonassoc OPERATOR_EQ OPERATOR_DIF OPERATOR_LE OPERATOR_GE '<' '>'
+
 
 %%
 
@@ -46,20 +60,20 @@ type : KW_INT
     |
     ;
 
-dlcrVar : type TK_IDENTIFIER '=' ltVal ';'
-        |    type TK_IDENTIFIER '[' LIT_INT ']' ';'
-        |    type TK_IDENTIFIER '[' LIT_INT ']' '=' vecVals ','
+dclrVar : type TK_IDENTIFIER '=' ltVal ';'
         |
         ;
+
+dclrVec : type TK_IDENTIFIER '[' LIT_INT ']' ';'
+        | type TK_IDENTIFIER '[' LIT_INT ']' '=' vecVals ';'
 
 ltVal: LIT_CHAR
     |    LIT_INT
     |   LIT_REAL
-    |
     ;
 
-vecVals : ltVal vecVals
-            |
+vecVals : ltVal
+            | vecVals ',' ltVal
             ;
 
 dclrFunc : type TK_IDENTIFIER '(' param ')' cmndBlck
@@ -72,7 +86,6 @@ param : type someVar someParam
 
 someVar : TK_IDENTIFIER
         |   TK_IDENTIFIER '[' expression ']'
-        |
         ;
 
 someParam : ',' type someVar someParam
@@ -83,18 +96,18 @@ expression: someVar
         |   ltVal
         | expression '+' expression
         | expression '-' expression
-        | expression '/' expression
+        | expression '*' expression
         | expression '/' expression
         | expression '>' expression
         | expression '<' expression
         | expression '&' expression
         | expression '|' expression
         | expression '~' expression
-        | expression '>=' expression
-        | expression '<=' expression
-        | expression '==' expression
-        | expression '!=' expression
-        |
+        | expression OPERATOR_LE expression
+        | expression OPERATOR_GE expression
+        | expression OPERATOR_EQ expression
+        | expression OPERATOR_DIF expression
+        | funcCall
         ;
 
 cmndBlck : '{' cmndSeq '}'
@@ -116,13 +129,13 @@ cmndAtr : someVar '=' expression
         ;
 
 cmndFlow: KW_IF cond cmnd
-        | KW_IF cond cmnd KW_ELSE cond cmnd
+        | KW_IF cond cmnd KW_ELSE cmnd
         | KW_WHILE wcond KW_DO cmnd
         | KW_DO cmnd KW_WHILE wcond ';'
         ;
 
 wcond : cond
-         expression
+        | expression
         ;
 
 cond : '(' expression ')'
@@ -134,10 +147,11 @@ cmndPrint: KW_PRINT printList
         ;
 
 printArgs : LIT_STRING
-        | expression
+        |  expression
         ;
 
-printLrgs : printArgs printList
+printList : printArgs
+        | printArgs printList
         |
         ;
 
@@ -158,7 +172,7 @@ someArgs : ',' expression someArgs
 
 %%
 
-void yyerror(){
-    printf("Syntax error on line %d\n", getLineNumber());
+void yyerror(const char *s){
+    cerr << "syntax error at line: " << getLineNumber() << endl; 
     exit(3); 
 }

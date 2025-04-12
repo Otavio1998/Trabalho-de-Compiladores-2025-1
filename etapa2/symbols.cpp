@@ -24,11 +24,27 @@ int InsertSymbol(string identifier,int type, map<string, SYMBOL> *symbolTable){
     if((GetSymbol(identifier, symbolTable)) == ""){
         SYMBOL s;
         s.name = identifier;
-        if (type == IDENTIFIER)
+        printf("type: %d\n", type);
+        if (type == TK_IDENTIFIER)
         {
             s.type = s_type::SYMBOL_IDENTIFIER;
-        } 
-        //s.type = type;
+        }
+         if (type == LIT_INT)
+        {
+            s.type = s_type::SYMBOL_LIT_INT;
+        }
+        if (type == LIT_REAL)
+        {
+            s.type = s_type::SYMBOL_LIT_REAL;
+        }
+        if (type == LIT_CHAR)
+        {
+            s.type = s_type::SYMBOL_LIT_CHAR;
+        }
+        if (type == LIT_STRING)
+        {
+            s.type = s_type::SYMBOL_LIT_STRING;
+        }
         (*symbolTable)[identifier] = s;
         return 1;
     }
@@ -36,9 +52,6 @@ int InsertSymbol(string identifier,int type, map<string, SYMBOL> *symbolTable){
     
 }
 
-int GetType(int type){
-
-}
 
 void printSymbolTable(){
     for(const auto &pair : *symbolTable){

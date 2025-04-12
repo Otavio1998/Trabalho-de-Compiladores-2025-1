@@ -11,6 +11,7 @@ void initMe();
 int getLineNumber();
 
 int yylex();
+int yyparse();
 extern char *yytext;
 extern FILE *yyin;
 
@@ -18,7 +19,7 @@ void printSymbolTable();
 
 int main(int argc, char **argv){
     if(argc < 2){
-        fprintf(stderr, "Call: ./Etapa1 filename\n");
+        fprintf(stderr, "Call: ./Etapa2 filename\n");
         exit(1);
     }
 
@@ -34,6 +35,6 @@ int main(int argc, char **argv){
     printSymbolTable();
     printf("numero de linhas: %d\n", getLineNumber());
 
-    return 0;
+    exit(0);
 
 }
