@@ -1,0 +1,219 @@
+%{
+    #include<iostream>
+    #include "symbols.hpp"
+    #include "ast.hpp"
+    using namespace std;
+
+    int yylex();
+    int getLineNumber();
+    void yyerror(astnode* parsetree, const char* s);
+
+%}
+
+%union
+{
+        SYMBOL* symbolo;
+        astnode* node;
+}
+
+
+%token KW_BYTE
+%token KW_INT
+%token KW_CHAR
+%token KW_REAL
+%token KW_RETURN
+%token KW_DO
+%token KW_ELSE
+%token KW_IF
+%token KW_PRINT
+%token KW_READ
+%token KW_WHILE
+
+%token<symbolo> TK_IDENTIFIER
+%token<symbolo> LIT_INT
+%token<symbolo> LIT_CHAR
+%token<symbolo> LIT_REAL
+%token<symbolo> LIT_STRING
+
+%token<node> OPERATOR_LE
+%token<node> OPERATOR_GE
+%token<node> OPERATOR_EQ
+%token<node> OPERATOR_DIF
+
+%type<node> program
+%type<node> dclr
+%type<node> type
+%type<node> dclrVar
+%type<node> dclrVec
+%type<node> dclrFunc
+%type<node> ltVal
+%type<node> vecVals
+%type<node> expression
+%type<node> param
+%type<node> someParam
+%type<node> someVar
+%type<node> cmndBlck
+%type<node> cmndSeq
+%type<node> cmnd
+%type<node> cond
+%type<node> wcond
+%type<node> cmndAtr
+%type<node> cmndFlow
+%type<node> cmndPrint
+%type<node> cmndRead
+%type<node> cmndReturn
+%type<node> printArgs
+%type<node> printList
+%type<node> funcCall
+%type<node> funcArgs
+%type<node> someArgs
+
+
+
+%token TOKEN_ERROR
+
+%left '+' '-'
+%left '*' '/'
+%left '='
+%left '~'
+%left '&' '|'
+%nonassoc OPERATOR_EQ OPERATOR_DIF OPERATOR_LE OPERATOR_GE '<' '>'
+
+
+%parse-param{astnode* parsetree}
+
+%%
+
+program: dclr { $$ = $1; *parsetree = *$1; }
+    ;
+
+dclr : dclrVar dclr {$$ = createNode(AST_TYPE::AST_DCLR, 0, $1, $2, 0, 0); }
+    |    dclrFunc dclr { $$ = createNode(AST_TYPE::AST_DCLR, 0, $1, $2, 0, 0); }
+    |    dclrVec dclr {$$ = createNode(AST_TYPE::AST_DCLR, 0, $1, $2, 0, 0); }
+    | {$$ = 0; }
+    ;
+
+type : KW_INT {$$ = createNode(AST_TYPE::AST_INT, 0, 0, 0, 0, 0); }
+    |    KW_REAL {$$ = createNode(AST_TYPE::AST_REAL, 0, 0, 0, 0, 0); }
+    |    KW_BYTE {$$ = createNode(AST_TYPE::AST_BYTE, 0, 0, 0, 0, 0); }
+    |   KW_CHAR {$$ = createNode(AST_TYPE::AST_CHAR, 0, 0, 0, 0, 0); }
+    |
+    ;
+
+dclrVar : type TK_IDENTIFIER '=' ltVal ';' {$$ = createNode(AST_TYPE::AST_DCLRVAR, 0, $1, CreateSymbolNode($2), $4, 0); }
+        |
+        ;
+
+dclrVec : type TK_IDENTIFIER '[' LIT_INT ']' ';' { $$ = createNode(AST_TYPE::AST_DCLRVEC, 0, $1, CreateSymbolNode($2, CreateSymbolNode($4)), 0, 0);}
+        | type TK_IDENTIFIER '[' LIT_INT ']' '=' vecVals ';' {$$ = createNode(AST_TYPE::AST_DCLRVEC, 0, $1, CreateSymbolNode($2, CreateSymbolNode($4)), $7, 0);}
+
+ltVal: LIT_CHAR {$$ = CreateSymbolNode($1); }
+    |    LIT_INT {$$ = CreateSymbolNode($1); }
+    |   LIT_REAL {$$ = CreateSymbolNode($1); }
+    ;
+
+vecVals : ltVal {$$ = createNode(AST_TYPE::AST_VECVALS, 0, $1, 0, 0, 0);}
+            | vecVals ',' ltVal {$$ = createNode(AST_TYPE::AST_VECVALS, 0, $1, $3, 0, 0);}
+            ;
+
+dclrFunc : type TK_IDENTIFIER '(' param ')' cmndBlck {$$ = createNode(AST_TYPE::AST_DCLRFUNC, 0, $1, CreateSymbolNode($2), $4, $6); }
+            ;
+
+param : type someVar someParam {$$ = createNode(AST_TYPE::AST_PARAM, 0, $1, $2, $3, 0); }
+        | {$$ = 0; }
+        ;
+
+
+someVar : TK_IDENTIFIER {$$ = createNode(AST_TYPE::AST_SYMBOL, $1, 0, 0, 0, 0); }
+        |   TK_IDENTIFIER '[' expression ']' {$$ = createNode(AST_TYPE::AST_SYMBOL, $1, $3, 0, 0, 0); }
+        ;
+
+someParam : ',' type someVar someParam {$$ = createNode(AST_TYPE::AST_PARAM, 0, $2, $3, $4, 0); }
+        | {$$ = 0; }
+        ;
+
+expression: someVar {$$ = $1; }
+        |   ltVal {$$ = $1; }
+        | expression '+' expression {$$ = createNode(AST_TYPE::AST_ADD, 0, $1, $3, 0, 0); }
+        | expression '-' expression {$$ = createNode(AST_TYPE::AST_SUB, 0, $1, $3, 0, 0); }
+        | expression '*' expression {$$ = createNode(AST_TYPE::AST_MUL, 0, $1, $3, 0, 0); }
+        | expression '/' expression {$$ = createNode(AST_TYPE::AST_DIV, 0, $1, $3, 0, 0); }
+        | expression '>' expression {$$ = createNode(AST_TYPE::AST_GT, 0, $1, $3, 0, 0); }
+        | expression '<' expression {$$ = createNode(AST_TYPE::AST_LT, 0, $1, $3, 0, 0); }
+        | expression '&' expression {$$ = createNode(AST_TYPE::AST_AND, 0, $1, $3, 0, 0); }
+        | expression '|' expression {$$ = createNode(AST_TYPE::AST_OR, 0, $1, $3, 0, 0); }
+        | expression '~' expression {$$ = createNode(AST_TYPE::AST_NOT, 0, $1, $3, 0, 0); }
+        | '(' expression ')' {$$ = $2; }
+        | expression OPERATOR_LE expression {$$ = createNode(AST_TYPE::AST_LE, 0, $1, $2, $3, 0); }
+        | expression OPERATOR_GE expression {$$ = createNode(AST_TYPE::AST_GE, 0, $1, $2, $3, 0); }
+        | expression OPERATOR_EQ expression {$$ = createNode(AST_TYPE::AST_EQ, 0, $1, $2, $3, 0); }
+        | expression OPERATOR_DIF expression {$$ = createNode(AST_TYPE::AST_DIF, 0, $1, $2, $3, 0); }
+        | funcCall {$$ = $1; }
+        ;
+
+cmndBlck : '{' cmndSeq '}' {$$ = createNode(AST_TYPE::AST_CMNDBLCK, 0, $2, 0, 0, 0); }
+        ;
+
+cmndSeq : cmnd cmndSeq {$$ = createNode(AST_TYPE::AST_CMNDSEQ, 0, $1, $2, 0, 0); }
+        | {$$ = 0; }
+        ;
+
+cmnd : cmndAtr ';' {$$ = $1; }
+    | cmndFlow {$$ = $1; }
+    | cmndRead ';' {$$ = $1; }
+    | cmndPrint ';' {$$ = $1; }
+    | cmndReturn ';' {$$ = $1; }
+    | cmndBlck {$$ = $1; }
+    | ';' {$$ = 0; }
+
+cmndAtr : someVar '=' expression {$$ = createNode(AST_TYPE::AST_CMNDATR, 0, $1, $3, 0, 0);}
+        ;
+
+cmndFlow: KW_IF cond cmnd {$$ = createNode(AST_TYPE::AST_IF, 0, $2, $3, 0, 0);}
+        | KW_IF cond cmnd KW_ELSE cmnd {$$ = createNode(AST_TYPE::AST_IF, 0, $2, $3, $5, 0); } 
+        | KW_WHILE wcond KW_DO cmnd {$$ = createNode(AST_TYPE::AST_WHILE, 0, $2, $4, 0, 0); }
+        | KW_DO cmnd KW_WHILE wcond ';' {$$ = createNode(AST_TYPE::AST_DO, 0, $2, $4, 0, 0);}
+        ;
+
+wcond : cond {$$ = $1; }
+        | expression {$$ = $1; }
+        ;
+
+cond : '(' expression ')' {$$ = $2; }
+
+cmndRead : KW_READ someVar {$$ = createNode(AST_TYPE::AST_READ, 0, $2, 0, 0, 0); }
+        ;
+
+cmndPrint: KW_PRINT printList {$$ = createNode(AST_TYPE::AST_PRINT, 0, $2, 0, 0, 0); }
+        ;
+
+printArgs : LIT_STRING {$$ = CreateSymbolNode($1); }
+        |  expression {$$ = $1; }
+        ;
+
+printList : printArgs {$$ = createNode(AST_TYPE::AST_PRINTARGS, 0, $1, 0, 0, 0); }
+        | printArgs printList {$$ = createNode(AST_TYPE::AST_PRINTARGS, 0, $1, $2, 0, 0); }
+        | {$$ = 0; }
+        ;
+
+cmndReturn: KW_RETURN expression {$$ = createNode(AST_TYPE::AST_RETURN, 0, $2, 0, 0, 0); }
+        ;
+
+funcCall : TK_IDENTIFIER '(' funcArgs ')' {$$ = createNode(AST_TYPE::AST_FUNCALL, $1, $3, 0, 0, 0); }
+        ;
+
+funcArgs : expression someArgs {$$ = createNode(AST_TYPE::AST_FUNCARGS, 0, $1, $2, 0, 0); }
+        | {$$ = 0; }
+        ;
+
+someArgs : ',' expression someArgs {$$ = createNode(AST_TYPE::AST_FUNCARGS, 0, $2, $3, 0, 0); }
+        | {$$ = 0; }
+        ;
+
+
+%%
+
+void yyerror(astnode* parsetree, const char *s){
+    cerr << "syntax error at line: " << getLineNumber() << endl; 
+    exit(3); 
+}
